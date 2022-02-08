@@ -20,6 +20,18 @@ def check_posted_data(posted_data, operation):
             return 301
         else:
             return 200
+    elif operation == "divide":
+        if "x" not in posted_data or "y" not in posted_data:
+            return 301
+        elif posted_data["y"] == 0:
+            return 302
+        else:
+            return 200
+    elif operation == "multiply":
+        if "x" not in posted_data or "y" not in posted_data:
+            return 301
+        else:
+            return 200
 
 
 class Add(Resource):
@@ -32,12 +44,12 @@ class Add(Resource):
 
         if status_code == 200:
             x, y = get_posted_data(postedData)
-            sum = x+y
+            message = x+y
         else:
-            sum = "missing argument"
+            message = "missing argument"
 
         retMap = {
-            "Message": sum,
+            "Message": message,
             "status code": status_code
         }
         return jsonify(retMap)
@@ -53,12 +65,12 @@ class Subtract(Resource):
 
         if status_code == 200:
             x, y = get_posted_data(postedData)
-            sub = x - y
+            message = x - y
         else:
-            sub = "missing argument"
+            message = "missing argument"
 
         retMap = {
-            "Message": sub,
+            "Message": message,
             "Status code": status_code
         }
         return jsonify(retMap)
@@ -67,16 +79,51 @@ class Subtract(Resource):
 
 class Divide(Resource):
     def post(self):
-        pass
+        postedData = request.get_json()
+
+        status_code = check_posted_data(postedData, "divide")
+
+        if status_code == 200:
+            x, y = get_posted_data(postedData)
+            message = x/y
+        else:
+            if status_code == 301:
+                message = "missing argument"
+            elif status_code == 302:
+                message = "cant divide by zero"
+
+        retMap = {
+            "Message": message,
+            "Status code": status_code
+        }
+        return jsonify(retMap)
+
 
 
 class Multiply(Resource):
     def post(self):
-        pass
+        postedData = request.get_json()
+
+        # validate input
+        status_code = check_posted_data(postedData, "multiply")
+
+        if status_code == 200:
+            x, y = get_posted_data(postedData)
+            message = x * y
+        else:
+            message = "missing argument"
+
+        retMap = {
+            "Message": message,
+            "Status code": status_code
+        }
+        return jsonify(retMap)
 
 
 api.add_resource(Add, "/add")
 api.add_resource(Subtract, "/subtract")
+api.add_resource(Divide, "/divide")
+api.add_resource(Multiply, "/multiply")
 
 if __name__ == "__main__":
     app.run(debug=True)
